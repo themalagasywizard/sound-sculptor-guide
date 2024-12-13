@@ -2,8 +2,17 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Mic,
+  Music2,
+  Scissors,
+  Repeat,
+} from "lucide-react";
 import WaveformVisualizer from "@/components/WaveformVisualizer";
-import { Play, Pause, SkipBack, SkipForward, Mic, Music2 } from "lucide-react";
 
 const Workspace = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -95,9 +104,11 @@ const Workspace = () => {
           Select
         </Button>
         <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
+          <Scissors className="mr-2" />
           Cut
         </Button>
         <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
+          <Repeat className="mr-2" />
           Loop
         </Button>
         <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
