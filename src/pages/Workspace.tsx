@@ -14,7 +14,7 @@ import {
   Mic,
   Music2,
   StopCircle,
-  Record,
+  CircleDot,
 } from "lucide-react";
 import ChannelRack from "@/components/daw/ChannelRack";
 import Mixer from "@/components/daw/Mixer";
@@ -68,7 +68,7 @@ const Workspace = () => {
             } hover:text-red-500`}
             onClick={() => setIsRecording(!isRecording)}
           >
-            <Record />
+            <CircleDot />
           </Button>
         </div>
         <div className="flex items-center gap-4">
