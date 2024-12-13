@@ -1,7 +1,11 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import {
   Play,
   Pause,
@@ -9,19 +13,23 @@ import {
   SkipForward,
   Mic,
   Music2,
-  Scissors,
-  Repeat,
+  StopCircle,
+  Record,
 } from "lucide-react";
-import WaveformVisualizer from "@/components/WaveformVisualizer";
+import ChannelRack from "@/components/daw/ChannelRack";
+import Mixer from "@/components/daw/Mixer";
+import PianoRoll from "@/components/daw/PianoRoll";
+import Playlist from "@/components/daw/Playlist";
 
 const Workspace = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
+  const [isRecording, setIsRecording] = React.useState(false);
   const [bpm, setBpm] = React.useState(120);
 
   return (
-    <div className="min-h-screen bg-daw-background text-daw-text p-4">
+    <div className="h-screen bg-daw-background text-daw-text flex flex-col">
       {/* Transport Controls */}
-      <div className="flex items-center justify-between bg-daw-secondary p-4 rounded-lg mb-6">
+      <div className="flex items-center justify-between bg-daw-secondary p-4">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -30,6 +38,13 @@ const Workspace = () => {
             onClick={() => setIsPlaying(!isPlaying)}
           >
             {isPlaying ? <Pause /> : <Play />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-daw-text hover:text-daw-accent"
+          >
+            <StopCircle />
           </Button>
           <Button
             variant="ghost"
@@ -45,6 +60,16 @@ const Workspace = () => {
           >
             <SkipForward />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`${
+              isRecording ? "text-red-500" : "text-daw-text"
+            } hover:text-red-500`}
+            onClick={() => setIsRecording(!isRecording)}
+          >
+            <Record />
+          </Button>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -56,65 +81,34 @@ const Workspace = () => {
               className="w-20 bg-daw-background text-daw-text"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm">Key:</span>
-            <select className="bg-daw-background text-daw-text rounded px-2 py-1">
-              <option>C Major</option>
-              <option>A Minor</option>
-            </select>
-          </div>
         </div>
       </div>
 
-      {/* Prompt Bar */}
-      <div className="mb-6">
-        <div className="relative">
-          <Input
-            placeholder="Adjust your music (e.g., 'Make the bass line more groovy')"
-            className="bg-daw-secondary text-daw-text pl-4 pr-12 py-6 text-lg"
-          />
-          <Button
-            size="icon"
-            variant="ghost"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-daw-accent hover:text-daw-accent/80 hover:bg-transparent"
-          >
-            <Mic className="h-6 w-6" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Timeline */}
-      <div className="bg-daw-secondary rounded-lg p-4 mb-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Music2 className="text-daw-accent" />
-          <span className="font-semibold">Track 1</span>
-          <Slider
-            defaultValue={[75]}
-            max={100}
-            step={1}
-            className="w-32"
-          />
-        </div>
-        <WaveformVisualizer />
-      </div>
-
-      {/* Tool Panel */}
-      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-daw-secondary rounded-full px-6 py-3 flex gap-4">
-        <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
-          Select
-        </Button>
-        <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
-          <Scissors className="mr-2" />
-          Cut
-        </Button>
-        <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
-          <Repeat className="mr-2" />
-          Loop
-        </Button>
-        <Button variant="ghost" className="text-daw-text hover:text-daw-accent">
-          Quantize
-        </Button>
-      </div>
+      {/* Main Content */}
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex-1 bg-daw-background"
+      >
+        <ResizablePanel defaultSize={20}>
+          <ChannelRack />
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={60}>
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel defaultSize={60}>
+              <Playlist />
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={40}>
+              <PianoRoll />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize={20}>
+          <Mixer />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
