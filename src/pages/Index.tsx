@@ -4,8 +4,10 @@ import { Mic, Plus, BookOpen, Play } from "lucide-react";
 import WaveformVisualizer from "@/components/WaveformVisualizer";
 import ProjectCard from "@/components/ProjectCard";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
   const recentProjects = [
     { name: "Lo-fi Beat", genre: "Lo-fi Hip Hop", lastModified: "2h ago" },
     { name: "Ambient Pad", genre: "Ambient", lastModified: "1d ago" },
@@ -79,6 +81,7 @@ const Index = () => {
         <div className="flex justify-center gap-4 mb-16">
           <Button
             className="bg-daw-accent hover:bg-daw-accent/80 text-white px-6 py-2 flex items-center gap-2"
+            onClick={() => navigate("/workspace")}
           >
             <Plus className="h-5 w-5" /> New Project
           </Button>
@@ -104,7 +107,7 @@ const Index = () => {
               <ProjectCard
                 key={project.name}
                 {...project}
-                onClick={() => console.log("Opening project:", project.name)}
+                onClick={() => navigate("/workspace")}
               />
             ))}
           </div>
