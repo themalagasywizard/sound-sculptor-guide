@@ -20,11 +20,17 @@ import ChannelRack from "@/components/daw/ChannelRack";
 import Mixer from "@/components/daw/Mixer";
 import PianoRoll from "@/components/daw/PianoRoll";
 import Playlist from "@/components/daw/Playlist";
+import ProjectManager from "@/components/ProjectManager";
 
 const Workspace = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [isRecording, setIsRecording] = React.useState(false);
   const [bpm, setBpm] = React.useState(120);
+
+  const handleProjectLoad = (projectData: any) => {
+    // Handle loading project data into your DAW state
+    console.log('Loading project:', projectData);
+  };
 
   return (
     <div className="h-screen bg-daw-background text-daw-text flex flex-col">
@@ -71,6 +77,7 @@ const Workspace = () => {
             <CircleDot />
           </Button>
         </div>
+        <ProjectManager onProjectLoad={handleProjectLoad} />
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm">BPM:</span>
