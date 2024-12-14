@@ -21,16 +21,15 @@ import Mixer from "@/components/daw/Mixer";
 import PianoRoll from "@/components/daw/PianoRoll";
 import Playlist from "@/components/daw/Playlist";
 import ProjectManager from "@/components/ProjectManager";
+import TimelineEditor from "@/components/daw/TimelineEditor";
+import AudioEditor from "@/components/daw/AudioEditor";
 
 const Workspace = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [isRecording, setIsRecording] = React.useState(false);
   const [bpm, setBpm] = React.useState(120);
-
-  const handleProjectLoad = (projectData: any) => {
-    // Handle loading project data into your DAW state
-    console.log('Loading project:', projectData);
-  };
+  const [selectedTrack, setSelectedTrack] = React.useState<string | null>(null);
+  const [gridSnap, setGridSnap] = React.useState("1/4");
 
   return (
     <div className="h-screen bg-daw-background text-daw-text flex flex-col">
@@ -88,6 +87,19 @@ const Workspace = () => {
               className="w-20 bg-daw-background text-daw-text"
             />
           </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm">Grid:</span>
+            <select
+              value={gridSnap}
+              onChange={(e) => setGridSnap(e.target.value)}
+              className="bg-daw-background text-daw-text p-1 rounded"
+            >
+              <option value="1/4">1/4</option>
+              <option value="1/8">1/8</option>
+              <option value="1/16">1/16</option>
+              <option value="free">Free</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -103,11 +115,25 @@ const Workspace = () => {
         <ResizablePanel defaultSize={60}>
           <ResizablePanelGroup direction="vertical">
             <ResizablePanel defaultSize={60}>
-              <Playlist />
+              <TimelineEditor
+                gridSnap={gridSnap}
+                selectedTrack={selectedTrack}
+                onTrackSelect={setSelectedTrack}
+              />
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={40}>
-              <PianoRoll />
+              {selectedTrack ? (
+                selectedTrack.startsWith("midi") ? (
+                  <PianoRoll gridSnap={gridSnap} />
+                ) : (
+                  <AudioEditor />
+                )
+              ) : (
+                <div className="flex items-center justify-center h-full text-daw-text/60">
+                  Select a track to edit
+                </div>
+              )}
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>
