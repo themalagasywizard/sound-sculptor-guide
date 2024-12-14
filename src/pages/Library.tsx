@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,24 +6,49 @@ import { Search, Upload, Music2, AudioWaveform } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import SoundPreview from "@/components/SoundPreview";
 import SoundUploader from "@/components/SoundUploader";
+import { fileSystem, AudioFile } from "@/lib/fileSystem";
 
 const Library = () => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const categories = ["Drums", "Bass", "Melody", "Effects"];
-  const [sounds, setSounds] = useState([
-    { id: 1, name: "Kick 808", category: "Drums", duration: "0:02", audioUrl: "" },
-    { id: 2, name: "Deep Bass", category: "Bass", duration: "0:04", audioUrl: "" },
-    { id: 3, name: "Synth Lead", category: "Melody", duration: "0:08", audioUrl: "" },
-  ]);
+  const [sounds, setSounds] = useState<AudioFile[]>([]);
+  const [dragOver, setDragOver] = useState(false);
 
-  const handleFileUpload = async (files: FileList | null) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    await handleFileUpload(files);
+  }, []);
+
+  const handleFileUpload = async (files: File[]) => {
     if (!files?.length) return;
 
     setIsUploading(true);
     try {
-      // Process each file
-      for (const file of Array.from(files)) {
+      const hasPermission = await fileSystem.requestPermission();
+      if (!hasPermission) {
+        toast({
+          title: "Permission Denied",
+          description: "Please grant permission to save files locally.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      for (const file of files) {
         if (!file.type.startsWith('audio/')) {
           toast({
             title: "Invalid file type",
@@ -33,25 +58,8 @@ const Library = () => {
           continue;
         }
 
-        // Create audio element to get duration
-        const audio = new Audio();
-        audio.src = URL.createObjectURL(file);
-        
-        await new Promise((resolve) => {
-          audio.onloadedmetadata = () => {
-            const duration = `${Math.floor(audio.duration / 60)}:${Math.floor(audio.duration % 60).toString().padStart(2, '0')}`;
-            
-            // Add new sound to the library
-            setSounds(prev => [...prev, {
-              id: Date.now(),
-              name: file.name.replace(/\.[^/.]+$/, ""),
-              category: "Drums", // Default category, can be changed by user
-              duration,
-              audioUrl: URL.createObjectURL(file)
-            }]);
-            resolve(null);
-          };
-        });
+        const audioFile = await fileSystem.saveAudioToLibrary(file, "Drums");
+        setSounds(prev => [...prev, audioFile]);
       }
 
       toast({
@@ -70,7 +78,14 @@ const Library = () => {
   };
 
   return (
-    <div className="min-h-screen bg-daw-background p-6">
+    <div 
+      className={`min-h-screen bg-daw-background p-6 ${
+        dragOver ? 'bg-opacity-90' : ''
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex gap-4 items-center">
           <div className="relative flex-1">
@@ -80,7 +95,10 @@ const Library = () => {
               className="pl-10 bg-daw-secondary text-daw-text border-none"
             />
           </div>
-          <SoundUploader onUpload={handleFileUpload} isUploading={isUploading} />
+          <SoundUploader 
+            onUpload={(files) => files && handleFileUpload(Array.from(files))} 
+            isUploading={isUploading} 
+          />
         </div>
 
         <Tabs defaultValue={categories[0].toLowerCase()} className="w-full">
