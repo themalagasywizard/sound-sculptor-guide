@@ -23,6 +23,7 @@ import Playlist from "@/components/daw/Playlist";
 import ProjectManager from "@/components/ProjectManager";
 import TimelineEditor from "@/components/daw/TimelineEditor";
 import AudioEditor from "@/components/daw/AudioEditor";
+import { useToast } from "@/components/ui/use-toast";
 
 const Workspace = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -30,6 +31,31 @@ const Workspace = () => {
   const [bpm, setBpm] = React.useState(120);
   const [selectedTrack, setSelectedTrack] = React.useState<string | null>(null);
   const [gridSnap, setGridSnap] = React.useState("1/4");
+  const { toast } = useToast();
+
+  const handleProjectLoad = (projectData: any) => {
+    try {
+      // Here you would implement the logic to load the project data
+      // For now, we'll just show a success toast
+      toast({
+        title: "Project Loaded",
+        description: "Project data has been successfully loaded",
+      });
+      
+      // You can implement the actual project loading logic here
+      // For example:
+      // setBpm(projectData.bpm);
+      // setSelectedTrack(projectData.selectedTrack);
+      // etc...
+      
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load project data",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="h-screen bg-daw-background text-daw-text flex flex-col">
