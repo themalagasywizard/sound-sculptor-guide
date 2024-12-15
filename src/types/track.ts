@@ -7,6 +7,7 @@ export interface Track {
   isSolo: boolean;
   volume: number;
   pan: number;
+  clips?: TrackClip[];
 }
 
 export interface TrackClip {
@@ -15,5 +16,23 @@ export interface TrackClip {
   startTime: number;
   duration: number;
   type: 'audio' | 'midi';
-  data: any; // Will be either audio buffer or MIDI data
+  data: AudioClipData | MidiClipData;
+}
+
+export interface AudioClipData {
+  waveformData: number[];
+  gain: number;
+  audioUrl?: string;
+}
+
+export interface MidiClipData {
+  notes: MidiNote[];
+  quantization: string;
+}
+
+export interface MidiNote {
+  pitch: number;
+  startTime: number;
+  duration: number;
+  velocity: number;
 }

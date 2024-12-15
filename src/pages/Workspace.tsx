@@ -15,6 +15,8 @@ import {
   Music2,
   StopCircle,
   CircleDot,
+  Download,
+  Bell,
 } from "lucide-react";
 import ChannelRack from "@/components/daw/ChannelRack";
 import Mixer from "@/components/daw/Mixer";
@@ -24,6 +26,7 @@ import ProjectManager from "@/components/ProjectManager";
 import TimelineEditor from "@/components/daw/TimelineEditor";
 import AudioEditor from "@/components/daw/AudioEditor";
 import { useToast } from "@/components/ui/use-toast";
+import { Track } from "@/types/track";
 
 const Workspace = () => {
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -31,22 +34,20 @@ const Workspace = () => {
   const [bpm, setBpm] = React.useState(120);
   const [selectedTrack, setSelectedTrack] = React.useState<string | null>(null);
   const [gridSnap, setGridSnap] = React.useState("1/4");
+  const [metronomeEnabled, setMetronomeEnabled] = React.useState(false);
+  const [tracks, setTracks] = React.useState<Track[]>([]);
+  const [playbackPosition, setPlaybackPosition] = React.useState(0);
   const { toast } = useToast();
 
   const handleProjectLoad = (projectData: any) => {
     try {
-      // Here you would implement the logic to load the project data
-      // For now, we'll just show a success toast
       toast({
         title: "Project Loaded",
         description: "Project data has been successfully loaded",
       });
       
-      // You can implement the actual project loading logic here
-      // For example:
-      // setBpm(projectData.bpm);
-      // setSelectedTrack(projectData.selectedTrack);
-      // etc...
+      if (projectData.bpm) setBpm(projectData.bpm);
+      if (projectData.tracks) setTracks(projectData.tracks);
       
     } catch (error) {
       toast({
@@ -55,6 +56,48 @@ const Workspace = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePlayPause = () => {
+    setIsPlaying(!isPlaying);
+    // Additional audio playback logic would go here
+  };
+
+  const handleStop = () => {
+    setIsPlaying(false);
+    setPlaybackPosition(0);
+    // Additional stop logic would go here
+  };
+
+  const handleExport = async () => {
+    try {
+      // This is a placeholder for actual export logic
+      toast({
+        title: "Exporting Project",
+        description: "Your project is being exported...",
+      });
+      // Actual export logic would go here
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export project",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddTrack = (type: 'audio' | 'midi') => {
+    const newTrack: Track = {
+      id: `track-${tracks.length + 1}`,
+      name: `Track ${tracks.length + 1}`,
+      type,
+      color: `bg-${['purple', 'blue', 'amber', 'green', 'red'][tracks.length % 5]}-500`,
+      isMuted: false,
+      isSolo: false,
+      volume: 0.8,
+      pan: 0,
+    };
+    setTracks([...tracks, newTrack]);
   };
 
   return (
@@ -66,7 +109,7 @@ const Workspace = () => {
             variant="ghost"
             size="icon"
             className="text-daw-text hover:text-daw-accent"
-            onClick={() => setIsPlaying(!isPlaying)}
+            onClick={handlePlayPause}
           >
             {isPlaying ? <Pause /> : <Play />}
           </Button>
@@ -74,6 +117,7 @@ const Workspace = () => {
             variant="ghost"
             size="icon"
             className="text-daw-text hover:text-daw-accent"
+            onClick={handleStop}
           >
             <StopCircle />
           </Button>
@@ -94,15 +138,31 @@ const Workspace = () => {
           <Button
             variant="ghost"
             size="icon"
-            className={`${
-              isRecording ? "text-red-500" : "text-daw-text"
-            } hover:text-red-500`}
+            className={`${isRecording ? "text-red-500" : "text-daw-text"} hover:text-red-500`}
             onClick={() => setIsRecording(!isRecording)}
           >
             <CircleDot />
           </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`${metronomeEnabled ? "text-daw-accent" : "text-daw-text"} hover:text-daw-accent`}
+            onClick={() => setMetronomeEnabled(!metronomeEnabled)}
+          >
+            <Bell />
+          </Button>
         </div>
-        <ProjectManager onProjectLoad={handleProjectLoad} />
+        <div className="flex items-center gap-2">
+          <ProjectManager onProjectLoad={handleProjectLoad} />
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handleExport}
+          >
+            <Download className="w-4 h-4" />
+            Export
+          </Button>
+        </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm">BPM:</span>
@@ -135,7 +195,27 @@ const Workspace = () => {
         className="flex-1 bg-daw-background"
       >
         <ResizablePanel defaultSize={20}>
-          <ChannelRack />
+          <div className="h-full flex flex-col">
+            <div className="p-2 flex gap-2">
+              <Button
+                size="sm"
+                onClick={() => handleAddTrack('audio')}
+                className="flex-1"
+              >
+                <Mic className="w-4 h-4 mr-2" />
+                Add Audio
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleAddTrack('midi')}
+                className="flex-1"
+              >
+                <Music2 className="w-4 h-4 mr-2" />
+                Add MIDI
+              </Button>
+            </div>
+            <ChannelRack />
+          </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={60}>
